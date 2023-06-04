@@ -104,6 +104,17 @@ class CategoryViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
 
 
+class VideoViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+    queryset = post.objects.all()
+    serializer_class = postVideoSerializer
+
+    def get_queryset(self):
+        return self.queryset
+
+
 class postViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows groups to be viewed or edited.
@@ -142,17 +153,19 @@ class postViewSet(viewsets.ModelViewSet):
             password = settings.EMAIL_HOST_PASSWORD
             email_from = login
             recipient_list = subscribers_queryset
+            transformed_image = "/image/upload/h_650,w_600".join(
+                serializer.data["mainImage"].split("/image/upload"))
 
             text = f"""
-            <h3>{request.data["title"]}</h3><br>
-            <img src="{request.data["mainImage"]}" alt="Poster">
+            <h3>{serializer.data['title']}</h3><br>
+            <img src="{transformed_image}" alt="{serializer.data['author']}'s post">
             <br>
-            <p>{request.data["summary"]}</p>
-            <a href='#'>Read More</a>"""
+            <p>{serializer.data['summary']}</p>
+            <a href="https://smcreport.com/post/{serializer.data['slug']}">Read More</a>"""
 
             message = EmailMessage()
-            message['From'] = email_from
-            message['Subject'] = f'New Blog Post: {request.data["title"]}'
+            message['From'] = f"SMC Report NewsLetter <{email_from}>"
+            message['Subject'] = f'New Blog Post: {serializer.data["title"]}'
             message['Date'] = formatdate(localtime=True)
             message['Message-ID'] = make_msgid()
             message.set_content(text, subtype='html')
@@ -176,6 +189,14 @@ class imageViewSet(viewsets.ModelViewSet):
     queryset = imageShow.objects.all()
     serializer_class = imageSerializer
     # lookup_field = 'image_slide'
+
+    def get_queryset(self):
+
+        queryset = imageShow.objects.all()
+        post = self.request.query_params.get('post')
+        if post is not None:
+            queryset = queryset.filter(posts=post)
+        return queryset
 
 
 class postReviewViewSet(viewsets.ModelViewSet):

@@ -33,8 +33,8 @@ if 'SECRET_KEY' in os.environ:
     SECRET_KEY = os.environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# if not IS_HEROKU:
-DEBUG = True
+if not IS_HEROKU:
+    DEBUG = True
 
 if IS_HEROKU:
     ALLOWED_HOSTS = ["*"]
@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.sites',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -72,7 +73,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
 ]
-
+SITE_ID = 1
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -108,6 +109,8 @@ if IS_HEROKU:
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+
+DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
 AUTHENTICATION_BACKENDS = (
     # Needed to login by username in Django admin, regardless of `allauth`
